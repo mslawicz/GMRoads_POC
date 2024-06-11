@@ -32,6 +32,7 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 #define DAC_SAMPLES_SIZE	1536	/* 300 ms buffer for samples f=5120 Hz */
+#define ACCELERATOR_BUFFER_SIZE		1024 * 2 * 6	/* 2 * 1024 6-byte samples (2 bytes of X Y Z axes */
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -53,6 +54,7 @@ UART_HandleTypeDef huart3;
 /* USER CODE BEGIN PV */
 uint16_t DAC_samples[DAC_SAMPLES_SIZE];
 uint32_t DAC_wave_length;	/* actual wave length in number of samples */
+uint8_t accelerator_buffer[ACCELERATOR_BUFFER_SIZE];
 
 /* USER CODE END PV */
 
@@ -111,6 +113,7 @@ int main(void)
   HAL_TIM_Base_Start(&htim6);
   DAC_wave_length = 1024;	/* actual wave length in number of samples */
   HAL_DAC_Start_DMA(&hdac, DAC_CHANNEL_1, (const uint32_t*)DAC_samples, DAC_wave_length, DAC_ALIGN_12B_R);
+  HAL_SPI_Receive_DMA(&hspi1, accelerator_buffer, ACCELERATOR_BUFFER_SIZE);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -233,7 +236,7 @@ static void MX_SPI1_Init(void)
   hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
   hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
   hspi1.Init.NSS = SPI_NSS_HARD_OUTPUT;
-  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_128;
+  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_256;
   hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
   hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
@@ -403,7 +406,38 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+/**
+  * @brief  Rx Half Transfer completed callback.
+  * @param  hspi pointer to a SPI_HandleTypeDef structure that contains
+  *               the configuration information for SPI module.
+  * @retval None
+  */
+void HAL_SPI_RxHalfCpltCallback(SPI_HandleTypeDef *hspi)
+{
+  /* Prevent unused argument(s) compilation warning */
+  UNUSED(hspi);
 
+  /* NOTE : This function should not be modified, when the callback is needed,
+            the HAL_SPI_RxHalfCpltCallback() should be implemented in the user file
+   */
+}
+
+
+/**
+  * @brief  Rx Transfer completed callback.
+  * @param  hspi pointer to a SPI_HandleTypeDef structure that contains
+  *               the configuration information for SPI module.
+  * @retval None
+  */
+void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi)
+{
+  /* Prevent unused argument(s) compilation warning */
+  UNUSED(hspi);
+
+  /* NOTE : This function should not be modified, when the callback is needed,
+            the HAL_SPI_RxCpltCallback should be implemented in the user file
+   */
+}
 /* USER CODE END 4 */
 
 /**
